@@ -14,11 +14,12 @@ void print(const BitVector& bv) {
     std::cout << std::endl;
 }
  
-
 BitVector::Reference::Reference(BitVector* ptr) : ptr(ptr){ }
+
 BitVector::Reference::operator bool() {
     return (static_cast<const BitVector&>(*ptr))[currIndex];
 }
+
 BitVector::Reference& BitVector::Reference::operator=(bool input) {
    if (input) {
       ptr -> set(currIndex);
@@ -30,18 +31,32 @@ BitVector::Reference& BitVector::Reference::operator=(bool input) {
 }
 
 size_t BitVector::countOfSubArrays() const {
-   return _size / initialSize <= 1 ? 1 : !(_size % initialSize) ? _size / initialSize : _size / initialSize + 1;
+   return _size / initialSize < 1 ? 1 : !(_size % initialSize) ? _size / initialSize : _size / initialSize + 1;
 }
 
 BitVector::BitVector(const size_t size) : _size(size), ref(this), _count(0) {
    ptr = new uint64_t[countOfSubArrays()]; 
 }
+
 BitVector::BitVector(const BitVector& input) : _size(input.size()), ref(this), _count(input.count()) {
    ptr = new uint64_t[countOfSubArrays()];
    for (size_t i = 0; i <= countOfSubArrays(); ++i) {
       ptr[i] = input.ptr[i];
    } 
 }
+
+BitVector::BitVector(const std::string& str, char one, char zero) : _size(str.length()), ref(this), _count(0) {
+   ptr = new uint64_t[countOfSubArrays()];
+   for (int i = 0; i < size(); ++i) {
+      if (str[i] == one) {
+        set(size() - 1 - i);
+      }
+      else if (str[i] != zero) {
+         throw std::invalid_argument("invalid_argument");
+      }
+   }
+}
+
 BitVector& BitVector::operator= (const BitVector& input) {
   if (input.size() != this -> size()) {
    throw std::invalid_argument("BitVectors should have same size for using operator =");
@@ -52,22 +67,27 @@ BitVector& BitVector::operator= (const BitVector& input) {
    }
    return *this; 
 }
+
 BitVector::~BitVector() {
     delete [] ptr;
 }
+
 bool BitVector::operator[] (const size_t index) const {
     size_t pos = index / initialSize;
     size_t offset = index - (pos * initialSize);
     return ptr[pos] & static_cast<uint64_t>(pow(2, offset));
  }
- BitVector::Reference& BitVector::operator[] (const size_t index) {
+
+BitVector::Reference& BitVector::operator[] (const size_t index) {
    ref.currIndex = index;
    return this -> ref;
  }
- size_t BitVector::size() const {
+
+size_t BitVector::size() const {
      return _size;
  }
- void BitVector::set(const size_t index) {
+
+void BitVector::set(const size_t index) {
    if (test(index)) {
       return;
     }
@@ -75,8 +95,9 @@ bool BitVector::operator[] (const size_t index) const {
     size_t offset = index - (pos * initialSize);
     ++_count;
     ptr[pos] |= static_cast<uint64_t>(pow(2, offset));
- }; 
- void BitVector::reset(const size_t index) {
+}
+
+void BitVector::reset(const size_t index) {
     if (!test(index)) {
       return;
     }
@@ -84,8 +105,9 @@ bool BitVector::operator[] (const size_t index) const {
     size_t offset = index - (pos * initialSize);
     --_count;
     ptr[pos] ^= static_cast<uint64_t>(pow(2, offset));
- }; 
- bool BitVector::operator==(const BitVector& input) const {
+ }
+
+bool BitVector::operator==(const BitVector& input) const {
    if (this -> size() != input.size()) {
       return false;
    }
@@ -96,33 +118,41 @@ bool BitVector::operator[] (const size_t index) const {
       }
    }
    return true;
- }
- bool BitVector::operator !=(const BitVector& input) const {
+}
+
+bool BitVector::operator !=(const BitVector& input) const {
    return !(*this == input);
- }
- bool BitVector::test(size_t index) const {
+}
+
+bool BitVector::test(size_t index) const {
    if (index > size()) {
       throw std::out_of_range("std::out_of_range");
    }
    return (static_cast<const BitVector&>(*this))[index];
- }
-  bool BitVector::all() const {
+}
+
+bool BitVector::all() const {
    return _size == _count;
-  }
-  bool BitVector::none() const {
+}
+
+bool BitVector::none() const {
    return _count == 0;
-  }
-  bool BitVector::any() const {
+}
+
+bool BitVector::any() const {
    return _count != 0;
-  }
-  size_t BitVector::count() const {
+}
+
+size_t BitVector::count() const {
    return _count;
-  }
- BitVector BitVector::operator&(const int num) const {
+}
+
+BitVector BitVector::operator&(const int num) const {
    BitVector tmp(size());
    tmp.ptr[0] = this -> ptr[0] & num;
    return tmp;
-  }
+}
+
 BitVector BitVector::operator&(const BitVector& input) const {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -132,7 +162,8 @@ BitVector BitVector::operator&(const BitVector& input) const {
       tmp.ptr[i] &= input.ptr[i];
    }
    return tmp;
-  }
+}
+
 BitVector& BitVector::operator&= (const BitVector& input) {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -141,16 +172,19 @@ BitVector& BitVector::operator&= (const BitVector& input) {
       ptr[i] &= input.ptr[i];
    }
    return *this;
-   }
+}
+
 BitVector& BitVector::operator&=(const int num) {
    this -> ptr[0] &= num;
    return *this;
 }
+
 BitVector BitVector::operator|(const int num) const {
    BitVector tmp(size());
    tmp.ptr[0] = this -> ptr[0] | num;
    return tmp;
-  }
+}
+
 BitVector BitVector::operator|(const BitVector& input) const {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -160,7 +194,8 @@ BitVector BitVector::operator|(const BitVector& input) const {
       tmp.ptr[i] |= input.ptr[i];
    }
    return tmp;
-  }
+}
+
 BitVector& BitVector::operator|= (const BitVector& input) {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -169,16 +204,19 @@ BitVector& BitVector::operator|= (const BitVector& input) {
       ptr[i] |= input.ptr[i];
    }
    return *this;
-   }
+}
+
 BitVector& BitVector::operator|=(const int num) {
    this -> ptr[0] |= num;
    return *this;
 }
+
 BitVector BitVector::operator^(const int num) const {
    BitVector tmp(size());
    tmp.ptr[0] = this -> ptr[0] ^ num;
    return tmp;
-  }
+}
+
 BitVector BitVector::operator^(const BitVector& input) const {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -188,7 +226,8 @@ BitVector BitVector::operator^(const BitVector& input) const {
       tmp.ptr[i] ^= input.ptr[i];
    }
    return tmp;
-  }
+}
+
 BitVector& BitVector::operator^= (const BitVector& input) {
    if (this -> size() != input.size()) {
      throw std::invalid_argument("BitVectors should have same size for using operator &");
@@ -197,21 +236,22 @@ BitVector& BitVector::operator^= (const BitVector& input) {
       ptr[i] ^= input.ptr[i];
    }
    return *this;
-   }
+}
+
 BitVector& BitVector::operator^=(const int num) {
    this -> ptr[0] ^= num;
    return *this;
 }
- BitVector BitVector::operator~ () const {
-   BitVector tmp(_size);
-   for (int i = 0; i <= countOfSubArrays(); ++i) {
-      tmp.ptr[i] = ~ptr[i]; 
-   }
-   tmp._count = _size - _count;
-   return tmp; 
- }
 
- BitVector BitVector::operator>> (const size_t pos) const {
+BitVector BitVector::operator~ () const {
+   BitVector tmp(_size);
+   for (int i = 0; i < size(); ++i) {
+      tmp.flip(i); 
+   }
+   return tmp; 
+}
+
+BitVector BitVector::operator>> (const size_t pos) const {
    if (pos >= size()) {
       return BitVector(size());
    }
@@ -227,9 +267,9 @@ BitVector& BitVector::operator^=(const int num) {
       }
    }
    return tmp;
- }
+}
 
- BitVector& BitVector::operator>>= (const size_t pos) {
+BitVector& BitVector::operator>>= (const size_t pos) {
    if (pos >= size()) {
       for (int i = 0; i <= countOfSubArrays(); ++i) {
          ptr[i] = 0;
@@ -249,9 +289,9 @@ BitVector& BitVector::operator^=(const int num) {
       }
    } 
    return *this;
- }
+}
 
- BitVector BitVector::operator<< (const size_t pos) const {
+BitVector BitVector::operator<< (const size_t pos) const {
    if (pos >= size()) {
       return BitVector(size());
    }
@@ -267,9 +307,9 @@ BitVector& BitVector::operator^=(const int num) {
       }
    }
    return tmp;
- }
+}
 
- BitVector& BitVector::operator<<= (const size_t pos) {
+BitVector& BitVector::operator<<= (const size_t pos) {
    if (pos >= size()) {
       for (int i = 0; i <= countOfSubArrays(); ++i) {
          ptr[i] = 0;
@@ -289,5 +329,71 @@ BitVector& BitVector::operator^=(const int num) {
       }
    } 
    return *this;
- }
+}
+
+BitVector& BitVector::flip() {
+   for (int i = 0; i < size(); ++i) {
+      flip(i);
+   }
+   return *this; 
+}
+
+BitVector& BitVector::flip(size_t pos) {
+   if (pos >= size()) {
+      throw std::out_of_range("std::out_of_range");
+   }
+   (*this)[pos] = test(pos) ^ 1;
+   return *this;
+}
+
+std::string BitVector::to_string(char zero, char one) const {
+   std::string result;
+   result.reserve(size());
+   for (int i = size() - 1; i >=0; --i) {
+        if (test(i)) {
+         result.push_back(one);
+        }
+        else {
+         result.push_back(zero);
+        }
+   }
+   return result;
+}
+
+unsigned long BitVector::to_ulong() const {
+   if (none()) {
+      return 0;
+   }
+   if (countOfSubArrays() > 1) {
+      for (int i = 1; i <= countOfSubArrays(); ++i) {
+         if (ptr[i] != 0) {
+            throw  std::overflow_error(" overflow_error");
+         }
+      }
+   }
+   if (sizeof(long) < (initialSize / 8)) {
+      throw  std::overflow_error(" overflow_error");
+   }
+   return ptr[0];
+}
+
+unsigned long long BitVector::to_ullong() const {
+   if (none()) {
+      return 0;
+   }
+   if (countOfSubArrays() > 1) {
+      for (int i = 1; i <= countOfSubArrays(); ++i) {
+         if (ptr[i] != 0) {
+            throw  std::overflow_error(" overflow_error");
+         }
+      }
+   }
+   if (sizeof(long long) < (initialSize / 8)) {
+      throw  std::overflow_error(" overflow_error");
+   }
+   return ptr[0];
+}
+
+
+
                            
