@@ -1,27 +1,28 @@
 #include <cstdint>
 #include <cmath>
+#include <string>
 #ifndef BITVECTOR_H
 #define BITVECTOR_H
 
 
 class BitVector {
- class Reference {
-   BitVector* ptr;
- public:
-   Reference(BitVector*);
-   int currIndex = 0;
-   operator bool ();
-   Reference& operator= (bool input);  
- }; 
- const short initialSize = 64;
- uint64_t* ptr;
- size_t _size;
- size_t _count;
- Reference ref;
- size_t countOfSubArrays() const;
- public:
-   BitVector(const size_t size);
+
+private:
+
+   class Reference {
+     BitVector* ptr;
+   public:
+     Reference(BitVector*);
+     int currIndex = 0;
+     operator bool ();
+     Reference& operator= (bool input);  
+   };   
+ 
+public:
+
+   explicit BitVector(const size_t size);
    BitVector(const BitVector& input);
+   explicit BitVector (const std::string& str, char one = '1', char zero = '0');
    BitVector& operator= (const BitVector& input);
    Reference& operator[] (const size_t index);
    bool operator[] (const size_t index) const;
@@ -52,11 +53,22 @@ class BitVector {
    BitVector& operator>>= (const size_t pos);
    BitVector operator<< (const size_t pos) const;
    BitVector& operator<<= (const size_t pos);
-
-
-   
+   BitVector& flip();
+   BitVector& flip(size_t pos);
+   std::string to_string(char zero = '0', char one = '1') const;
+   unsigned long to_ulong() const;
+   unsigned long long to_ullong() const; 
    ~BitVector();
 
+private:
+
+   const short initialSize = 64;
+   uint64_t* ptr;
+   size_t _size;
+   size_t _count;
+   Reference ref;
+   size_t countOfSubArrays() const; 
+     
 };
 
 #endif
